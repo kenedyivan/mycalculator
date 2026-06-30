@@ -1,0 +1,33 @@
+services:
+  app:
+    image: ${MYCALCULATOR_IMAGE:-ghcr.io/wafariko-limited/mycalculator:latest}
+    container_name: mycalculator-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - app_storage:/var/www/storage
+      - app_cache:/var/www/bootstrap/cache
+    networks:
+      - mycalculator-network
+
+  web:
+    image: nginx:alpine
+    container_name: mycalculator-web
+    restart: unless-stopped
+    ports:
+      - "8199:80"
+    volumes:
+      - ./infrastructure/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - mycalculator-network
+
+networks:
+  mycalculator-network:
+    driver: bridge
+
+volumes:
+  app_storage:
+  app_cache:
